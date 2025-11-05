@@ -1,6 +1,7 @@
 module Backend exposing (..)
 
 import BiSeqDict exposing (BiSeqDict)
+import Id exposing (ChatId, DocumentId, Id, chatId1, chatId2, chatId3, docId1, docId2, docId3)
 import Lamdera exposing (ClientId, SessionId)
 import MultiBiSeqDict exposing (MultiBiSeqDict)
 import MultiSeqDict exposing (MultiSeqDict)
@@ -25,37 +26,7 @@ testBiSeqDict =
         |> BiSeqDict.insert Bar "world"
 
 
-chat1 : ChatId
-chat1 =
-    ChatId never
-
-
-chat2 : ChatId
-chat2 =
-    ChatId never
-
-
-chat3 : ChatId
-chat3 =
-    ChatId never
-
-
-doc1 : DocumentId
-doc1 =
-    DocumentId never
-
-
-doc2 : DocumentId
-doc2 =
-    DocumentId never
-
-
-doc3 : DocumentId
-doc3 =
-    DocumentId never
-
-
-generateFakeDocument : DocumentId -> String -> Document
+generateFakeDocument : Id DocumentId -> String -> Document
 generateFakeDocument id name =
     { id = id
     , name = name
@@ -76,17 +47,17 @@ init : ( Model, Cmd BackendMsg )
 init =
     let
         documents =
-            [ generateFakeDocument doc1 "meeting-notes"
-            , generateFakeDocument doc2 "project-proposal"
-            , generateFakeDocument doc3 "budget-2024"
+            [ generateFakeDocument docId1 "meeting-notes"
+            , generateFakeDocument docId2 "project-proposal"
+            , generateFakeDocument docId3 "budget-2024"
             ]
 
         chatDocuments =
             MultiBiSeqDict.empty
-                |> MultiBiSeqDict.insert chat1 doc1
-                |> MultiBiSeqDict.insert chat1 doc2
-                |> MultiBiSeqDict.insert chat2 doc1
-                |> MultiBiSeqDict.insert chat2 doc3
+                |> MultiBiSeqDict.insert chatId1 docId1
+                |> MultiBiSeqDict.insert chatId1 docId2
+                |> MultiBiSeqDict.insert chatId2 docId1
+                |> MultiBiSeqDict.insert chatId2 docId3
     in
     ( { message = "Hello!"
       , chatDocuments = chatDocuments
@@ -96,17 +67,17 @@ init =
     )
 
 
-getDocumentsInChat : ChatId -> Model -> SeqSet DocumentId
+getDocumentsInChat : Id ChatId -> Model -> SeqSet (Id DocumentId)
 getDocumentsInChat chatId model =
     MultiBiSeqDict.get chatId model.chatDocuments
 
 
-getChatsWithDocument : DocumentId -> Model -> SeqSet ChatId
+getChatsWithDocument : Id DocumentId -> Model -> SeqSet (Id ChatId)
 getChatsWithDocument docId model =
     MultiBiSeqDict.getReverse docId model.chatDocuments
 
 
-transferDocument : ChatId -> ChatId -> DocumentId -> Model -> Model
+transferDocument : Id ChatId -> Id ChatId -> Id DocumentId -> Model -> Model
 transferDocument fromChat toChat docId ({ chatDocuments } as model) =
     { model
         | chatDocuments =
@@ -116,14 +87,14 @@ transferDocument fromChat toChat docId ({ chatDocuments } as model) =
     }
 
 
-shareDocumentWithChat : ChatId -> DocumentId -> Model -> Model
+shareDocumentWithChat : Id ChatId -> Id DocumentId -> Model -> Model
 shareDocumentWithChat chatId docId ({ chatDocuments } as model) =
     { model
         | chatDocuments = MultiBiSeqDict.insert chatId docId chatDocuments
     }
 
 
-removeDocumentFromChat : ChatId -> DocumentId -> Model -> Model
+removeDocumentFromChat : Id ChatId -> Id DocumentId -> Model -> Model
 removeDocumentFromChat chatId docId ({ chatDocuments } as model) =
     { model
         | chatDocuments = MultiBiSeqDict.remove chatId docId chatDocuments
@@ -133,8 +104,8 @@ removeDocumentFromChat chatId docId ({ chatDocuments } as model) =
 exampleOperations : Model -> Model
 exampleOperations model =
     model
-        |> shareDocumentWithChat chat3 doc2
-        |> transferDocument chat1 chat3 doc1
+        |> shareDocumentWithChat chatId3 docId2
+        |> transferDocument chatId1 chatId3 docId1
 
 
 update : BackendMsg -> Model -> ( Model, Cmd BackendMsg )

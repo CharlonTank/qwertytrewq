@@ -3,21 +3,14 @@ module Types exposing (..)
 import BiSeqDict exposing (BiSeqDict)
 import Browser exposing (UrlRequest)
 import Browser.Navigation exposing (Key)
+import Id exposing (ChatId, DocumentId, Id)
 import MultiBiSeqDict exposing (MultiBiSeqDict)
 import SeqDict exposing (SeqDict)
 import Url exposing (Url)
 
 
-type ChatId
-    = ChatId Never
-
-
-type DocumentId
-    = DocumentId Never
-
-
 type alias Document =
-    { id : DocumentId
+    { id : Id DocumentId
     , name : String
     , s3Url : String
     }
@@ -31,7 +24,7 @@ type alias FrontendModel =
 
 type alias BackendModel =
     { message : String
-    , chatDocuments : MultiBiSeqDict ChatId DocumentId
+    , chatDocuments : MultiBiSeqDict (Id ChatId) (Id DocumentId)
     , documents : List Document
     }
 
